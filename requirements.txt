@@ -1,0 +1,10 @@
+langchain==0.3.7
+langchain-core==0.3.15
+langchain-community==0.3.7
+langchain-openai==0.3.4
+langgraph==0.2.74
+pydantic>=2.6
+gradio>=5.9
+faiss-cpu
+tavily-python
+python-dotenv
