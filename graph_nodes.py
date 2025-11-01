@@ -1,7 +1,7 @@
 from langchain.schema import Document
 from pgvector_setup import retriever
 from grader import RetrievalGrader
-from generator import rag_chain
+from generator import rag_chain,format_docs
 from rewriter import question_rewriter
 from dotenv import load_dotenv
 
@@ -16,7 +16,7 @@ def retrieve(state):
     question = state["question"]
 
     documents = retriever.invoke(question)
-    return {"documents": documents, "question": question}
+    return {"documents": documents, "question": question, "timesTransformed": 0}
 
 
 def generate(state):
@@ -27,7 +27,7 @@ def generate(state):
     question = state["question"]
     documents = state["documents"]
 
-    generation = rag_chain.invoke({"context": documents, "question": question})
+    generation = rag_chain.invoke({"context": format_docs(documents), "question": question})
     return {"documents": documents, "question": question, "generation": generation}
 
 
@@ -41,9 +41,9 @@ def grade_documents(state):
 
     grader = RetrievalGrader()
     filtered_docs = []
-
     for d in documents:
         score = grader.grade(question, d.page_content)
+        print(d.metadata['source'],f'---SCORE: {score.binary_score}---')
         if score.binary_score == "yes":
             print("---GRADE: DOCUMENT RELEVANT---")
             filtered_docs.append(d)
@@ -60,9 +60,12 @@ def transform_query(state):
     print("---TRANSFORM QUERY---")
     question = state["question"]
     documents = state["documents"]
+    timesTransformed = state["timesTransformed"]
+    timesTransformed += 1
 
     better_question = question_rewriter.invoke({"question": question})
-    return {"documents": documents, "question": better_question}
+    print("---NEW QUESTION---")
+    return {"documents": documents, "question": better_question, "timesTransformed": timesTransformed}
 
 
 def decide_to_generate(state):

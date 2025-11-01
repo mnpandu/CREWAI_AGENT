@@ -16,3 +16,4 @@ class GraphState(TypedDict):
     question: str
     generation: str
     documents: List[str]
+    timesTransformed: int
