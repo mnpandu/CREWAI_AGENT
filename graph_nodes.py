@@ -42,7 +42,6 @@ def grade_documents(state):
 
     grader = RetrievalGrader()
     filtered_docs = []
-    web_search = "No"
     for d in documents:
         score = grader.grade(question, d.page_content)
         print(d.metadata['source'],f'---SCORE: {score.binary_score}---')
@@ -50,9 +49,10 @@ def grade_documents(state):
             print("---GRADE: DOCUMENT RELEVANT---")
             filtered_docs.append(d)
         else:
-            print("---GRADE: DOCUMENT NOT RELEVANT---")
-            web_search = "No"
-            #continue
+            print("---GRADE: DOCUMENT NOT RELEVANT---")           
+    # If at least one relevant document, web search is "Yes"
+    web_search = "No" if len(filtered_docs) > 0 else "Yes"
+    print(f"---WEB SEARCH NEEDED: {web_search}---")
     return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
 
@@ -67,7 +67,7 @@ def transform_query(state):
     timesTransformed += 1
 
     better_question = question_rewriter.invoke({"question": question})
-    print("---NEW QUESTION---")
+    print("---NEW QUESTION---  {better_question}")
     return {"documents": documents, "question": better_question, "timesTransformed": timesTransformed}
 
 
