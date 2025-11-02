@@ -67,7 +67,7 @@ def transform_query(state):
     timesTransformed += 1
 
     better_question = question_rewriter.invoke({"question": question})
-    print("---NEW QUESTION---  {better_question}")
+    print(f"---NEW QUESTION: {better_question}---")
     return {"documents": documents, "question": better_question, "timesTransformed": timesTransformed}
 
 
