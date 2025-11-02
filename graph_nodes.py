@@ -99,9 +99,11 @@ def decide_to_generate(state):
         print("---DECISION: GENERATE---")
         return "generate"
 
+from datetime import datetime
 def web_search(state):
     """
     Perform web search via Tavily if no relevant documents found in vector DB.
+    Adds metadata before storing in the retriever.
     """
     print("---WEB SEARCH---")
     question = state["question"]
@@ -115,23 +117,47 @@ def web_search(state):
         print(f"❌ Web search failed: {e}")
         return {"documents": documents, "question": question}
 
-    # Normalize result list
-    contents = []
+    # Normalize results to Document objects with metadata
+    new_docs = []
     if isinstance(results, list):
         for r in results:
-            # Tavily now returns Document objects directly
             if isinstance(r, Document):
-                contents.append(r.page_content)
+                # Add metadata if not present
+                r.metadata.update({
+                    "source": r.metadata.get("source", "TavilySearch"),
+                    "search_query": question,
+                    "retrieved_from": "web_search",
+                    "timestamp": datetime.now().isoformat()
+                })
+                new_docs.append(r)
             else:
-                contents.append(str(r))
+                new_docs.append(
+                    Document(
+                        page_content=str(r),
+                        metadata={
+                            "source": "TavilySearch",
+                            "search_query": question,
+                            "retrieved_from": "web_search",
+                            "timestamp": datetime.now().isoformat()
+                        },
+                    )
+                )
     else:
-        contents.append(str(results))
+        new_docs.append(
+            Document(
+                page_content=str(results),
+                metadata={
+                    "source": "TavilySearch",
+                    "search_query": question,
+                    "retrieved_from": "web_search",
+                    "timestamp": datetime.now().isoformat()
+                },
+            )
+        )
 
-    combined = "\n".join(contents)
+    # Add results to memory store
+    retriever.add_documents(new_docs)
+    documents.extend(new_docs)
 
-    # Wrap everything into a single Document object
-    web_doc = Document(page_content=combined)
-    documents.append(web_doc)
-
-    print("---WEB SEARCH COMPLETE---")
+    print(f"---WEB SEARCH COMPLETE: {len(new_docs)} new docs stored---")
     return {"documents": documents, "question": question}
