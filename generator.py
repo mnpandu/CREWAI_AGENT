@@ -1,10 +1,11 @@
 # generator.py
-from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 
+from langsmith import Client
+hub= Client()
 # Load prompt template
-prompt = hub.pull("rlm/rag-prompt")
+prompt = hub.pull_prompt("rlm/rag-prompt")
 
 # LLM
 llm = ChatOpenAI(model_name="gpt-4o", temperature=0)

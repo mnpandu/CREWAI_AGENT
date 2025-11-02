@@ -1,5 +1,5 @@
 # load_website_to_pgvector.py
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
 from pgvector_setup import vector_store
 import os

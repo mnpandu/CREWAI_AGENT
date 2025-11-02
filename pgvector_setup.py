@@ -21,7 +21,7 @@ vector_store = PGVector(
 )
 
 # ✅ Create retriever
-retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+retriever = vector_store.as_retriever(search_kwargs={"k": 3})
 
 
 # Optional test data loader

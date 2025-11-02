@@ -17,7 +17,7 @@ class RetrievalGrader:
     is relevant to the user's question using an LLM binary output.
     """
 
-    def __init__(self, model_name: str = "gpt-4o", temperature: float = 0):
+    def __init__(self, model_name: str = "gpt-4o-mini", temperature: float = 0):
         # 1️⃣ Create the model
         self.llm = ChatOpenAI(model=model_name, temperature=temperature)
 

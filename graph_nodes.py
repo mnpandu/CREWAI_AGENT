@@ -1,8 +1,9 @@
-from langchain.schema import Document
+from langchain_core.documents import Document
 from pgvector_setup import retriever
 from grader import RetrievalGrader
 from generator import rag_chain,format_docs
 from rewriter import question_rewriter
+from langchain_tavily import TavilySearch
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,6 +42,7 @@ def grade_documents(state):
 
     grader = RetrievalGrader()
     filtered_docs = []
+    web_search = "No"
     for d in documents:
         score = grader.grade(question, d.page_content)
         print(d.metadata['source'],f'---SCORE: {score.binary_score}---')
@@ -49,8 +51,9 @@ def grade_documents(state):
             filtered_docs.append(d)
         else:
             print("---GRADE: DOCUMENT NOT RELEVANT---")
-
-    return {"documents": filtered_docs, "question": question}
+            web_search = "No"
+            #continue
+    return {"documents": filtered_docs, "question": question, "web_search": web_search}
 
 
 def transform_query(state):
@@ -70,8 +73,65 @@ def transform_query(state):
 
 def decide_to_generate(state):
     """
-    Always proceed to generation (no web search branch).
+    Determines whether to generate an answer, or re-generate a question.
+
+    Args:
+        state (dict): The current graph state
+
+    Returns:
+        str: Binary decision for next node to call
     """
+
     print("---ASSESS GRADED DOCUMENTS---")
-    print("---DECISION: GENERATE---")
-    return "generate"
+    state["question"]
+    web_search = state["web_search"]
+    state["documents"]
+
+    if web_search == "Yes":
+        # All documents have been filtered check_relevance
+        # We will re-generate a new query
+        print(
+            "---DECISION: ALL DOCUMENTS ARE NOT RELEVANT TO QUESTION, TRANSFORM QUERY---"
+        )
+        return "transform_query"
+    else:
+        # We have relevant documents, so generate answer
+        print("---DECISION: GENERATE---")
+        return "generate"
+
+def web_search(state):
+    """
+    Perform web search via Tavily if no relevant documents found in vector DB.
+    """
+    print("---WEB SEARCH---")
+    question = state["question"]
+    documents = state.get("documents", [])
+
+    # Initialize TavilySearch
+    try:
+        search_tool = TavilySearch(max_results=3)
+        results = search_tool.invoke(question)
+    except Exception as e:
+        print(f"❌ Web search failed: {e}")
+        return {"documents": documents, "question": question}
+
+    # Normalize result list
+    contents = []
+    if isinstance(results, list):
+        for r in results:
+            # Tavily now returns Document objects directly
+            if isinstance(r, Document):
+                contents.append(r.page_content)
+            else:
+                contents.append(str(r))
+    else:
+        contents.append(str(results))
+
+    combined = "\n".join(contents)
+
+    # Wrap everything into a single Document object
+    web_doc = Document(page_content=combined)
+    documents.append(web_doc)
+
+    print("---WEB SEARCH COMPLETE---")
+    return {"documents": documents, "question": question}

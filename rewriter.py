@@ -3,8 +3,8 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# Initialize the LLM (you can switch to gpt-4o for better performance)
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+# Initialize the LLM (you can switch to gpt-3.5-turbo-0125 for better performance)
+llm = ChatOpenAI(model="gpt-3.5-turbo-0125", temperature=0)
 
 # System prompt for rewriting user questions
 system = (
