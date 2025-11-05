@@ -1,0 +1,8 @@
+OPENAI_API_KEY=
+TAVILY_API_KEY=
+USER_AGENT=crewai_agent_local
+LANGCHAIN_TRACING_V2=false
+LANGCHAIN_API_KEY=""
+# .env
+SEARCH_URLS=https://www.guidewellsource.com/about.html,https://www.cms.gov/regulations-and-guidance/guidance/manuals/downloads/clm104c03.pdf
+db_url=postgresql+psycopg2://postgres:postgres@postgres.c70e88q6kkw7.us-east-2.rds.amazonaws.com:5432/postgres
